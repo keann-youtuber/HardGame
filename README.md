@@ -1,24 +1,48 @@
 # HardGame
 
-RPG online 2D top-down para navegador, pensado para PC e mobile.
+Browser-first online 2D top-down RPG.
 
-## Protótipo atual
-- Canvas fullscreen responsivo.
-- Mundo procedural determinístico por seed.
-- Biomas: floresta, água, areia, montanha e região morta.
-- Árvores, minérios, cavernas, cidades, baús e monstros.
-- HP, MAN (mana), AURA, ouro, nível, madeira e minério.
-- Espada, magia, arco (base de controle), bloqueio e perfect block.
-- Regeneração, inimigos perseguidores, loot e morte com perda de ouro.
-- Salvamento local por navegador.
+## Architecture
 
-## Arquitetura online
-GitHub guarda o cliente e arquivos estáticos. GitHub não deve ser usado como banco de dados de jogadores nem como servidor de partida em tempo real.
+- **GitHub**: source code, procedural definitions, game data and version control.
+- **Cloudflare Pages**: serves the browser client.
+- **Cloudflare Pages Functions / Worker**: API boundary and authentication callbacks.
+- **Cloudflare D1**: persistent player/account/game data.
+- **Realtime multiplayer**: kept behind a separate server/network adapter so the client is not coupled to the database.
 
-Para login Google/Discord e multiplayer real será necessário um backend/API. Se Cloudflare for apenas hospedagem, esse backend precisa ser externo; se aceitarmos Cloudflare Workers + D1/KV, podemos manter a infraestrutura praticamente toda na Cloudflare.
+## Database
 
-## Controles
-WASD mover · Mouse/E atacar · Q magia · R arco · Espaço bloquear · F interagir.
+Run the schema in `db/schema.sql` against a D1 database.
 
-## Próximas camadas
-Servidor autoritativo WebSocket, OAuth Google/Discord, contas persistentes, chunk streaming, party/guild/chat, economia, crafting, leilão, classes, atributos, armas, armaduras, árvores de magia, bosses e anti-cheat.
+The schema stores:
+- users and OAuth provider identity
+- characters and progression
+- inventory
+- equipment
+- quests
+
+Never put OAuth client secrets or D1 credentials in `index.html` or client JavaScript.
+
+## Current API
+
+- `GET /api/health`
+- `GET /api/player`
+- `POST /api/player`
+
+The player endpoint is intentionally protected by an API-side identity boundary. The temporary `X-HardGame-User` header exists for local architecture/testing only; production OAuth must replace it with a signed server session.
+
+## Deployment
+
+1. Create a D1 database named `hardgame`.
+2. Replace `database_id` in `wrangler.toml`.
+3. Apply `db/schema.sql`.
+4. Configure Google and Discord OAuth callback secrets in the Cloudflare environment.
+5. Deploy the Pages site and Functions.
+6. Configure the game client to use the deployed API.
+
+## Important
+
+GitHub is not the player database. It stores the project and static game definitions. D1 stores mutable player state.
+
+This repository is being built incrementally toward:
+procedural chunks, resources, caves, cities, mobs, bosses, loot, economy, sword, bow, axe, pickaxe, magic, blocking, perfect block, inventory, progression and realtime multiplayer.
