@@ -1,9 +1,6 @@
-name = "hardgame-api"
+name = "hardgame"
 compatibility_date = "2026-10-03"
-
-# Deploy the static site with Cloudflare Pages.
-# This Worker configuration is intentionally separate so the same
-# repository can host the API without putting secrets in the browser.
+pages_build_output_dir = "."
 
 [[d1_databases]]
 binding = "DB"
@@ -11,4 +8,4 @@ database_name = "hardgame"
 database_id = "REPLACE_WITH_D1_DATABASE_ID"
 
 [vars]
-GAME_ENV = "development"
+GAME_ENV = "production"
